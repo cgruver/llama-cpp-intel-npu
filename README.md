@@ -15,9 +15,7 @@ EOF
 
 dnf install intel-oneapi-base-toolkit
 
-dnf install -y libgudev-devel g++ cmake git kernel-devel lspci clinfo intel-level-zero oneapi-level-zero oneapi-level-zero-devel intel-igc-devel.x86_64 intel-gmmlib-devel ninja-build  intel-opencl-clang-devel libcurl-devel 
-
-dnf install -y intel-opencl mesa-dri-drivers mesa-vulkan-drivers mesa-vdpau-drivers mesa-libEGL mesa-libgbm mesa-libGL mesa-libxatracker libvpl-tools libva libva-utils intel-gmmlib intel-ocloc intel-metee intel-metee-devel
+dnf install -y libgudev-devel g++ cmake git kernel-devel lspci clinfo intel-level-zero oneapi-level-zero oneapi-level-zero-devel intel-igc-devel.x86_64 intel-gmmlib-devel ninja-build  intel-opencl-clang-devel libcurl-devel intel-opencl mesa-dri-drivers mesa-vulkan-drivers mesa-vdpau-drivers mesa-libEGL mesa-libgbm mesa-libGL mesa-libxatracker libvpl-tools libva libva-utils intel-gmmlib intel-ocloc intel-metee intel-metee-devel
 
 lspci -nn |grep  -Ei 'VGA|DISPLAY'
 lspci -nn |grep  -i accel
@@ -51,9 +49,6 @@ firewall-cmd --add-port=8080/tcp --permanent
 firewall-cmd --reload
 
 ./bin/llama-server --model granite-code:8b --host 0.0.0.0
-
-
-git clone https://github.com/cgruver/llama.cpp.git
 ```
 
 # Random Notes:
