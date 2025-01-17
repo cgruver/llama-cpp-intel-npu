@@ -1,4 +1,8 @@
 # llama-cpp-intel-npu
+
+Initial Attempt to leverage native AI capabilities in the Intel Untra Core 7 chipset
+
+```bash
 tee > /tmp/oneAPI.repo << EOF
 [oneAPI]
 name=Intel® oneAPI repository
@@ -50,11 +54,10 @@ firewall-cmd --reload
 
 
 git clone https://github.com/cgruver/llama.cpp.git
+```
 
-cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON
-
-# Packages not available -
+# Random Notes:
 
 intel-media libmfxgen1 libvpl2 level-zero intel-level-zero-gpu mesa-libxatracker libvpl-tools intel-metrics-discovery intel-metrics-library intel-igc-core intel-igc-cm libmetee intel-gsc
 
-
+cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON
