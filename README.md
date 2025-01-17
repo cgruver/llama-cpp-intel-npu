@@ -1,1 +1,60 @@
 # llama-cpp-intel-npu
+tee > /tmp/oneAPI.repo << EOF
+[oneAPI]
+name=Intel® oneAPI repository
+baseurl=https://yum.repos.intel.com/oneapi
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+EOF
+
+dnf install intel-oneapi-base-toolkit
+
+dnf install -y libgudev-devel g++ cmake git kernel-devel lspci clinfo intel-level-zero oneapi-level-zero oneapi-level-zero-devel intel-igc-devel.x86_64 intel-gmmlib-devel ninja-build  intel-opencl-clang-devel libcurl-devel 
+
+dnf install -y intel-opencl mesa-dri-drivers mesa-vulkan-drivers mesa-vdpau-drivers mesa-libEGL mesa-libgbm mesa-libGL mesa-libxatracker libvpl-tools libva libva-utils intel-gmmlib intel-ocloc intel-metee intel-metee-devel
+
+lspci -nn |grep  -Ei 'VGA|DISPLAY'
+lspci -nn |grep  -i accel
+
+git clone https://github.com/intel/linux-npu-driver.git
+cd linux-npu-driver/
+git submodule update --init --recursive
+cmake -B build -S .
+cmake --build build --parallel $(nproc)
+cmake --install build --prefix /usr
+rmmod intel_vpu
+modprobe intel_vpu
+
+git clone https://github.com/intel/compute-runtime.git -b releases/24.52
+
+mkdir compute-runtime/build
+cd compute-runtime/build
+cmake -DCMAKE_BUILD_TYPE=Release -DNEO_SKIP_UNIT_TESTS=1 ../
+make -j`nproc`
+make install
+
+git clone https://github.com/ggerganov/llama.cpp.git -b b4502
+cd llama.cpp
+mkdir -p build
+cd build
+source /opt/intel/oneapi/setvars.sh
+cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_NATIVE=OFF -DGGML_CCACHE=OFF
+cmake --build . --config Release -j -v
+
+firewall-cmd --add-port=8080/tcp --permanent
+firewall-cmd --reload
+
+./bin/llama-server --model granite-code:8b --host 0.0.0.0
+
+
+git clone https://github.com/cgruver/llama.cpp.git
+
+cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON
+
+# Packages not available -
+
+intel-media libmfxgen1 libvpl2 level-zero intel-level-zero-gpu mesa-libxatracker libvpl-tools intel-metrics-discovery intel-metrics-library intel-igc-core intel-igc-cm libmetee intel-gsc
+
+
