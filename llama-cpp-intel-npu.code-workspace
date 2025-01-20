@@ -1,8 +1,8 @@
 {
 	"folders": [
 		{
-			"name": "dev-workspace-images",
-			"path": "/projects/dev-workspace-images"
+			"name": "llama-cpp-intel-npu",
+			"path": "/projects/llama-cpp-intel-npu"
 		}
 	],
 	"extensions": {
