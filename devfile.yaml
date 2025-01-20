@@ -1,0 +1,68 @@
+schemaVersion: 2.2.0
+attributes:
+  controller.devfile.io/storage-type: per-workspace
+metadata:
+  name: llama-cpp-intel-npu
+projects:
+  - name: llama-cpp-intel-npu
+    git:
+      remotes:
+        origin: https://github.com/cgruver/llama-cpp-intel-npu.git
+      checkoutFrom:
+        remote: origin
+        revision: main
+components:
+- name: dev-tools
+  attributes:
+    pod-overrides:
+      metadata:
+        annotations:
+          io.kubernetes.cri-o.Devices: "/dev/fuse,/dev/net/tun"
+      spec:
+        hostUsers: false
+    container-overrides: 
+      securityContext:
+        procMount: Unmasked
+  container:
+    # image: image-registry.openshift-image-registry.svc:5000/devspaces-images/cekit-builder:nested 
+    image: quay.io/cgruver0/che/workspace-base:latest
+    memoryLimit: 6Gi
+    mountSources: true
+    env:
+    - name: SHELL
+      value: "/bin/zsh"
+    - name: HOME
+      value: "/projects/home"
+    - name: VSCODE_DEFAULT_WORKSPACE
+      value: "/projects/llama-cpp-intel-npu/llama-cpp-intel-npu.code-workspace"
+    - name: GOPATH
+      value: /projects/home/go
+- volume:
+    size: 20Gi
+  name: projects
+- name: prep-workspace
+  container:
+    args:
+      - '-c'
+      - >-
+        mkdir -p /projects/bin && cp /usr/bin/oc /projects/bin/oc && cp /usr/bin/kubectl /projects/bin/kubectl && if [[ -f ${HOME}/.kube/config ]]; then rm ${HOME}/.kube/config; fi
+    command:
+      - /bin/bash
+    image: image-registry.openshift-image-registry.svc:5000/openshift/cli:latest
+    mountSources: true
+    sourceMapping: /projects
+    memoryRequest: 128Mi
+    memoryLimit: 256Mi
+    cpuRequest: 10m
+    cpuLimit: 200m
+    env:
+    - name: HOME
+      value: "/projects/home"
+commands:
+- apply:
+    component: prep-workspace
+    label: Pre Start Prep
+  id: prep-workspace
+events:
+  preStart:
+    - prep-workspace
