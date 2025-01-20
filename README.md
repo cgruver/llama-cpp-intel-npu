@@ -3,7 +3,7 @@
 Initial Attempt to leverage native AI capabilities in the Intel Untra Core 7 chipset
 
 ```bash
-tee > /tmp/oneAPI.repo << EOF
+tee > /etc/yum.repos.d/oneAPI.repo << EOF
 [oneAPI]
 name=Intel® oneAPI repository
 baseurl=https://yum.repos.intel.com/oneapi
