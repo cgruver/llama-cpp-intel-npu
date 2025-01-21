@@ -3,6 +3,35 @@
 Initial Attempt to leverage native AI capabilities in the Intel Untra Core 7 chipset
 
 ```bash
+cat << EOF > /etc/yum.repos.d/oneAPI.repo
+[oneAPI]
+name=Intel® oneAPI repository
+baseurl=https://yum.repos.intel.com/oneapi
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+EOF
+
+dnf install -y lspci clinfo intel-opencl g++ cmake git libcurl-devel intel-oneapi-base-toolkit
+
+git clone https://github.com/ggerganov/llama.cpp.git -b b4502
+cd llama.cpp
+mkdir -p build
+cd build
+source /opt/intel/oneapi/setvars.sh
+cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_CCACHE=OFF
+cmake --build . --config Release -j -v
+
+firewall-cmd --add-port=8080/tcp --permanent
+firewall-cmd --reload
+
+./bin/llama-server --model granite-code:3b --host 0.0.0.0 --n-gpu-layers 999 --flash-attn --ctx-size 32768
+```
+
+# Notes - 
+
+```bash
 tee > /etc/yum.repos.d/oneAPI.repo << EOF
 [oneAPI]
 name=Intel® oneAPI repository
@@ -42,17 +71,27 @@ cd llama.cpp
 mkdir -p build
 cd build
 source /opt/intel/oneapi/setvars.sh
-cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_NATIVE=OFF -DGGML_CCACHE=OFF
+cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_CCACHE=OFF
 cmake --build . --config Release -j -v
 
 firewall-cmd --add-port=8080/tcp --permanent
 firewall-cmd --reload
 
-./bin/llama-server --model granite-code:8b --host 0.0.0.0
+./bin/llama-server --model granite-code:3b --model-url ollama://granite-code:3b --host 0.0.0.0
 ```
 
-# Random Notes:
-
+```
 intel-media libmfxgen1 libvpl2 level-zero intel-level-zero-gpu mesa-libxatracker libvpl-tools intel-metrics-discovery intel-metrics-library intel-igc-core intel-igc-cm libmetee intel-gsc
 
-cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON
+cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON -DGGML_CCACHE=OFF
+
+-DBUILD_SHARED_LIBS=OFF
+
+-DGGML_NATIVE=OFF -DBUILD_SHARED_LIBS=OFF
+
+-- Installing: /etc/OpenCL/vendors/intel.icd
+-- Installing: /usr/local/bin/ocloc-24.52.1
+-- Installing: /usr/local/lib64/libocloc.so
+-- Installing: /usr/local/include/ocloc_api.h
+-- Installing: /usr/local/lib64/intel-opencl/libigdrcl.so
+```
