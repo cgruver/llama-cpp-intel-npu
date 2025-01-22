@@ -1,0 +1,15 @@
+FROM quay.io/fedora/fedora:41
+
+COPY oneAPI.repo /etc/yum.repos.d/
+
+USER 0
+
+RUN dnf install -y lspci clinfo intel-opencl g++ cmake git libcurl-devel intel-oneapi-base-toolkit ; \
+    git clone https://github.com/ggerganov/llama.cpp.git -b b4502 ; \
+    cd llama.cpp ; \
+    mkdir -p build ; \
+    cd build ; \
+    source /opt/intel/oneapi/setvars.sh ; \
+    cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_CCACHE=OFF ; \
+    cmake --build . --config Release -j -v ; \
+    make install

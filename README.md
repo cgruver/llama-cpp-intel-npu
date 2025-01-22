@@ -13,23 +13,28 @@ repo_gpgcheck=1
 gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
 EOF
 
-dnf install -y lspci clinfo intel-opencl g++ cmake git libcurl-devel intel-oneapi-base-toolkit
+dnf install -y lspci clinfo intel-opencl g++ cmake git tar libcurl-devel intel-oneapi-base-toolkit
 
-git clone https://github.com/ggerganov/llama.cpp.git -b b4502
+git clone https://github.com/ggerganov/llama.cpp.git -b b4523
 cd llama.cpp
 mkdir -p build
 cd build
 source /opt/intel/oneapi/setvars.sh
-cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_CCACHE=OFF
+cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON -DGGML_CCACHE=OFF -DGGML_NATIVE=ON 
 cmake --build . --config Release -j -v
+cmake --install .
 
 firewall-cmd --add-port=8080/tcp --permanent
 firewall-cmd --reload
 
-./bin/llama-server --model granite-code:3b --host 0.0.0.0 --n-gpu-layers 999 --flash-attn --ctx-size 32768
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib64:/usr/local/lib/
+
+llama-server --model granite-code:3b --host 0.0.0.0 --n-gpu-layers 999 --flash-attn --ctx-size 32768
 ```
 
 # Notes - 
+
+--offload-new-driver
 
 ```bash
 tee > /etc/yum.repos.d/oneAPI.repo << EOF
@@ -71,7 +76,7 @@ cd llama.cpp
 mkdir -p build
 cd build
 source /opt/intel/oneapi/setvars.sh
-cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_CCACHE=OFF
+cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DGGML_SYCL_F16=ON -DLLAMA_CURL=ON -DGGML_CCACHE=OFF 
 cmake --build . --config Release -j -v
 
 firewall-cmd --add-port=8080/tcp --permanent
@@ -88,6 +93,8 @@ cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_C
 -DBUILD_SHARED_LIBS=OFF
 
 -DGGML_NATIVE=OFF -DBUILD_SHARED_LIBS=OFF
+
+-DGGML_SYCL_DEVICE_ARCH=mtl_h -DCXX_FLAGS="--offload-new-driver"
 
 -- Installing: /etc/OpenCL/vendors/intel.icd
 -- Installing: /usr/local/bin/ocloc-24.52.1

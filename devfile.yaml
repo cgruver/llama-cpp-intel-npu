@@ -26,7 +26,10 @@ components:
   container:
     # image: image-registry.openshift-image-registry.svc:5000/devspaces-images/cekit-builder:nested 
     image: quay.io/cgruver0/che/workspace-base:latest
-    memoryLimit: 6Gi
+    memoryLimit: 8Gi
+    memoryRequest: 1Gi
+    cpuLimit: 4000m
+    cpuRequest: 1000m
     mountSources: true
     env:
     - name: SHELL
