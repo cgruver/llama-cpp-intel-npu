@@ -32,7 +32,7 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib64:/usr/local/lib/
 llama-server --model granite-code:3b --host 0.0.0.0 --n-gpu-layers 999 --flash-attn --ctx-size 32768
 ```
 
-# Notes - 
+# Notes - Not Necessarily Working...
 
 --offload-new-driver
 
@@ -102,3 +102,42 @@ cmake -B build -DGGML_NATIVE=OFF -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_C
 -- Installing: /usr/local/include/ocloc_api.h
 -- Installing: /usr/local/lib64/intel-opencl/libigdrcl.so
 ```
+
+## Build for bundling
+
+```bash
+cat << EOF > /etc/yum.repos.d/oneAPI.repo
+[oneAPI]
+name=Intel® oneAPI repository
+baseurl=https://yum.repos.intel.com/oneapi
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+EOF
+
+dnf install -y lspci clinfo intel-opencl g++ cmake git tar libcurl-devel intel-oneapi-base-toolkit
+git clone https://github.com/ggerganov/llama.cpp.git -b b4523
+cd llama.cpp
+mkdir -p build
+cd build
+source /opt/intel/oneapi/setvars.sh
+cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON -DGGML_CCACHE=OFF -DGGML_NATIVE=ON
+cmake --build . --config Release -j -v
+cmake --install . --prefix /tmp/llama-cpp
+cd /tmp/llama-cpp
+tar -cvf llama-cpp-bundle ./
+```
+
+## Notes for minimal install
+
+Packages - intel-oneapi-runtime-compilers intel-oneapi-mkl-core intel-oneapi-mkl-sycl-blas intel-oneapi-runtime-dnnl
+
+export LD_LIBRARY_PATH=/opt/intel/oneapi/redist/lib:/opt/intel/oneapi/redist/lib/clang/19/lib:/opt/intel/oneapi/redist/opt/compiler/lib
+
+unset LD_LIBRARY_PATH
+for i in $( find /opt/intel/oneapi/ -name lib )
+do
+  j=${i}:${j}
+done
+echo ${j}
