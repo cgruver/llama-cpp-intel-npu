@@ -17,7 +17,7 @@ components:
     pod-overrides:
       metadata:
         annotations:
-          io.kubernetes.cri-o.Devices: "/dev/fuse,/dev/net/tun"
+          io.kubernetes.cri-o.Devices: "/dev/fuse,/dev/net/tun,/dev/dri/card0,/dev/dri/renderD128"
       spec:
         hostUsers: false
     container-overrides: 
@@ -40,6 +40,24 @@ components:
       value: "/projects/llama-cpp-intel-npu/llama-cpp-intel-npu.code-workspace"
     - name: GOPATH
       value: /projects/home/go
+- name: llama-cpp
+  container:
+    image: quay.io/cgruver0/llama-cpp-intel-gpu:ubi9
+    sourceMapping: /projects
+    memoryLimit: 16Gi
+    memoryRequest: 1Gi
+    cpuLimit: 4000m
+    cpuRequest: 1000m
+    args:
+      - '-f'
+      - /dev/null
+    command:
+      - /usr/bin/tail
+    endpoints:
+      - exposure: public
+        name: llama-cpp
+        protocol: http
+        targetPort: 8080
 - volume:
     size: 20Gi
   name: projects
