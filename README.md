@@ -22,7 +22,7 @@ cd build
 source /opt/intel/oneapi/setvars.sh
 cmake .. -DGGML_SYCL=ON -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx -DLLAMA_CURL=ON -DGGML_CCACHE=OFF -DGGML_NATIVE=ON 
 cmake --build . --config Release -j -v
-cmake --install .
+cmake --install . --prefix /usr
 
 firewall-cmd --add-port=8080/tcp --permanent
 firewall-cmd --reload
@@ -141,3 +141,27 @@ do
   j=${i}:${j}
 done
 echo ${j}
+
+```bash
+cat << EOF | butane | oc apply -f -
+variant: openshift
+version: 4.18.0
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: enable-gpu
+storage:
+  files:
+  - path: /etc/crio/crio.conf.d/99-nested-podman
+    mode: 0644
+    overwrite: true
+    contents:
+      inline: |
+        [crio.runtime]
+        allowed_devices = [
+          "/dev/fuse",
+          "/dev/net/tun",
+          "/dev/dri"
+        ]
+EOF
+```
