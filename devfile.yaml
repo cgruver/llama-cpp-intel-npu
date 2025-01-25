@@ -11,6 +11,13 @@ projects:
       checkoutFrom:
         remote: origin
         revision: main
+  - name: ramallama
+    git:
+      remotes:
+        origin: https://github.com/cgruver/ramalama.git
+      checkoutFrom:
+        remote: origin
+        revision: main
 components:
 - name: dev-tools
   attributes:
@@ -42,7 +49,7 @@ components:
       value: /projects/home/go
 - name: llama-cpp
   container:
-    image: quay.io/cgruver0/llama-cpp-intel-gpu:ubi9
+    image: quay.io/cgruver0/llama-cpp-intel-gpu:latest
     sourceMapping: /projects
     memoryLimit: 16Gi
     memoryRequest: 1Gi

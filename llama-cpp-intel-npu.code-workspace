@@ -3,6 +3,10 @@
 		{
 			"name": "llama-cpp-intel-npu",
 			"path": "/projects/llama-cpp-intel-npu"
+		},
+		{
+			"name": "ramallama",
+			"path": "/projects/ramalama"
 		}
 	],
 	"extensions": {
