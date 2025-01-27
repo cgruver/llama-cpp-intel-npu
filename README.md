@@ -129,18 +129,14 @@ cd /tmp/llama-cpp
 tar -cvf llama-cpp-bundle ./
 ```
 
-## Notes for minimal install
-
 Packages - intel-oneapi-runtime-compilers intel-oneapi-mkl-core intel-oneapi-mkl-sycl-blas intel-oneapi-runtime-dnnl
 
 export LD_LIBRARY_PATH=/opt/intel/oneapi/redist/lib:/opt/intel/oneapi/redist/lib/clang/19/lib:/opt/intel/oneapi/redist/opt/compiler/lib
 
-unset LD_LIBRARY_PATH
-for i in $( find /opt/intel/oneapi/ -name lib )
-do
-  j=${i}:${j}
-done
-echo ${j}
+
+## Machiine Config to leak GPU into a Pod
+
+__Note:__ `/dev/net/tun` and `/dev/fuse` are enabled OOTB.  They are included here for compatibility.  
 
 ```bash
 cat << EOF | butane | oc apply -f -
@@ -161,7 +157,8 @@ storage:
         allowed_devices = [
           "/dev/fuse",
           "/dev/net/tun",
-          "/dev/dri"
+          "/dev/dri/renderD128",
+          "/dev/dri/card0"
         ]
 EOF
 ```
