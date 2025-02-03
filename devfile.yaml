@@ -24,7 +24,7 @@ components:
     pod-overrides:
       metadata:
         annotations:
-          io.kubernetes.cri-o.Devices: "/dev/fuse,/dev/net/tun,/dev/dri/card0,/dev/dri/renderD128"
+          io.kubernetes.cri-o.Devices: "/dev/fuse,/dev/net/tun,/dev/dri/renderD128"
       spec:
         hostUsers: false
     container-overrides: 
@@ -55,11 +55,6 @@ components:
     memoryRequest: 1Gi
     cpuLimit: 4000m
     cpuRequest: 1000m
-    args:
-      - '-f'
-      - /dev/null
-    command:
-      - /usr/bin/tail
     endpoints:
       - exposure: public
         name: llama-cpp
